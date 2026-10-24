@@ -2,6 +2,7 @@ import pandas as pd
 
 from core.market_data import download
 from core.ml_engine import train_model, predict_stock
+from core.scoring_engine import ai_score
 
 
 TICKERS = [
@@ -77,28 +78,28 @@ scores.sort(
 
 results = []
 
+rank = 1
+
 for ticker, prob in scores:
+
+    score, rating = ai_score(prob)
 
     print(
         f"{ticker:8} {prob:.2%}"
     )
 
-    rating = (
-        "BUY"
-        if prob >= 0.40
-        else "WATCH"
-        if prob >= 0.20
-        else "AVOID"
-    )
-
     results.append(
         {
+            "rank": rank,
             "ticker": ticker,
+            "score": score,
             "probability": round(prob, 4),
             "probability_pct": round(prob * 100, 2),
             "rating": rating,
         }
     )
+
+    rank += 1
 
 df_results = pd.DataFrame(results)
 
