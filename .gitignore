@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+
+.env
+
+logs/
+reports/
+
+.streamlit/
+
+models/*.json
+models/*.pkl
+models/*.joblib
+
+*.csv
