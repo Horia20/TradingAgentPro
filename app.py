@@ -3,6 +3,7 @@ import pandas as pd
 from core.market_data import download
 from core.ml_engine import train_model, predict_stock
 from core.scoring_engine import ai_score
+from core.backtest_engine import ai_strategy_summary
 
 
 TICKERS = [
@@ -113,3 +114,14 @@ print("\n=== TOP PICKS ===\n")
 print(df_results)
 
 print("\nSaved: reports/scan_results.csv")
+
+print("\n=== AI STRATEGY TEST ===\n")
+
+test_set = result["test_set"]
+
+print(
+    ai_strategy_summary(
+        test_set,
+        threshold=0.40
+    )
+)

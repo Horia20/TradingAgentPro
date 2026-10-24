@@ -162,3 +162,25 @@ def benchmark_backtest(data, horizon):
     return backtest_summary(
         all_returns
     )
+def signal_returns(ds, threshold):
+
+    signals = ds[
+        ds["probability"] >= threshold
+    ]
+
+    if len(signals) == 0:
+        return pd.Series(dtype=float)
+
+    return signals["fwd"]
+
+
+def ai_strategy_summary(ds, threshold=0.50):
+
+    returns = signal_returns(
+        ds,
+        threshold
+    )
+
+    return backtest_summary(
+        returns
+    )

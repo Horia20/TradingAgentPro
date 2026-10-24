@@ -111,10 +111,17 @@ def train_model(data, horizon=10, target=0.05):
         "n_test": len(test),
     }
 
+    test = test.copy()
+
+    test["probability"] = proba
+
     return {
         "model": model,
         "metrics": metrics,
+        "test_set": test,
     }
+
+
 def predict_stock(model, df):
 
     f = add_features(df)
