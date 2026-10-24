@@ -1,10 +1,21 @@
 import pandas as pd
 
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import (
+    roc_auc_score,
+    precision_score,
+    recall_score,
+    f1_score,
+)
+
 from xgboost import XGBClassifier
 
 from core.indicators import add_features
 from core.config import FEATURES
+
+from core.dataset_engine import (
+    build_dataset,
+    non_overlapping,
+)
 
 
 def make_model():
@@ -20,52 +31,6 @@ def make_model():
         verbosity=0,
         n_jobs=-1,
     )
-
-
-def non_overlapping(df, horizon):
-
-    parts = [
-        g.sort_index().iloc[::max(horizon, 1)]
-        for _, g in df.groupby("ticker")
-    ]
-
-    return pd.concat(parts) if parts else df
-
-
-def build_dataset(data, horizon, target):
-
-    parts = []
-
-    for ticker, df in data.items():
-
-        f = add_features(df)
-
-        f["fwd"] = (
-            f["Close"].shift(-horizon)
-            / f["Close"]
-            - 1
-        )
-
-        f["ticker"] = ticker
-
-        parts.append(
-            f.dropna(
-                subset=FEATURES + ["fwd"]
-            )[
-                FEATURES + ["fwd", "ticker"]
-            ]
-        )
-
-    if not parts:
-        return pd.DataFrame()
-
-    ds = pd.concat(parts)
-
-    ds["label"] = (
-        ds["fwd"] >= target
-    ).astype(int)
-
-    return ds
 
 
 def train_model(data, horizon=10, target=0.05):
@@ -105,8 +70,33 @@ def train_model(data, horizon=10, target=0.05):
         proba
     )
 
+    pred = (
+        proba >= 0.50
+    ).astype(int)
+
+    precision = precision_score(
+        test["label"],
+        pred,
+        zero_division=0
+    )
+
+    recall = recall_score(
+        test["label"],
+        pred,
+        zero_division=0
+    )
+
+    f1 = f1_score(
+        test["label"],
+        pred,
+        zero_division=0
+    )
+
     metrics = {
         "auc": float(auc),
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1),
         "n_train": len(train),
         "n_test": len(test),
     }
@@ -135,6 +125,8 @@ def predict_stock(model, df):
     if len(last) == 0:
         return None
 
-    prob = model.predict_proba(last)[0][1]
+    prob = model.predict_proba(
+        last
+    )[0][1]
 
     return float(prob)

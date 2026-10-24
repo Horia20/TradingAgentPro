@@ -1,9 +1,21 @@
 import pandas as pd
 
 from core.market_data import download
-from core.ml_engine import train_model, predict_stock
+from core.ml_engine import (
+    train_model,
+    predict_stock,
+    build_dataset,
+)
+
 from core.scoring_engine import ai_score
-from core.backtest_engine import ai_strategy_summary
+
+from core.backtest_engine import (
+    ai_strategy_summary,
+)
+
+from core.walkforward_engine import (
+    walk_forward_validation,
+)
 
 
 TICKERS = [
@@ -16,6 +28,7 @@ TICKERS = [
     "AMZN",
     "TSLA",
 ]
+
 
 data = {}
 
@@ -47,12 +60,25 @@ print(
 )
 
 print(
+    f"Precision: {result['metrics']['precision']:.3f}"
+)
+
+print(
+    f"Recall: {result['metrics']['recall']:.3f}"
+)
+
+print(
+    f"F1: {result['metrics']['f1']:.3f}"
+)
+
+print(
     f"Train rows: {result['metrics']['n_train']}"
 )
 
 print(
     f"Test rows: {result['metrics']['n_test']}"
 )
+
 
 print("\n=== STOCK SCAN ===\n")
 
@@ -117,6 +143,7 @@ print(df_results)
 
 print("\nSaved: reports/scan_results.csv")
 
+
 print("\n=== AI STRATEGY TEST ===\n")
 
 test_set = result["test_set"]
@@ -150,5 +177,30 @@ print(
     ai_strategy_summary(
         test_set,
         threshold=0.60
+    )
+)
+
+
+print("\n=== WALK FORWARD TEST ===\n")
+
+dataset = build_dataset(
+    data=data,
+    horizon=10,
+    target=0.05
+)
+
+wf = walk_forward_validation(
+    dataset,
+    folds=4,
+    threshold=0.40
+)
+
+print(wf)
+
+print("\n=== WALK FORWARD AVERAGES ===\n")
+
+print(
+    wf.mean(
+        numeric_only=True
     )
 )
