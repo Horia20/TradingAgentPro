@@ -1,14 +1,25 @@
 from core.market_data import download
-from core.indicators import rsi
-from core.indicators import atr
-from core.ml_engine import make_model
-from core.dataset_engine import non_overlapping
+from core.indicators import add_features
 
-print("Market Data OK")
-print("Indicators OK")
-print("ML Engine OK")
-print("Dataset Engine OK")
+print("Loading data...")
 
-model = make_model()
+df = download("AAPL")
 
-print(type(model).__name__)
+if df is None:
+    print("No data")
+else:
+
+    f = add_features(df)
+
+    print("Rows:", len(f))
+
+    print(
+        f[
+            [
+                "Close",
+                "SMA50",
+                "SMA200",
+                "RSI14"
+            ]
+        ].tail(3)
+    )
