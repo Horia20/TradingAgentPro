@@ -6,12 +6,4 @@ FEATURES = [
     "dist_sma200",
     "sma50_200",
     "RSI14",
-    "atr_pct",
-    "vol_ratio",
-    "dist_high",
-    "volat_20",
-    "macd_hist",
-    "stoch_k",
-    "roc12",
-    "cci20",
 ]

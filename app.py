@@ -1,25 +1,19 @@
 from core.market_data import download
-from core.indicators import add_features
+from core.ml_engine import build_dataset
 
-print("Loading data...")
+data = {
+    "AAPL": download("AAPL"),
+    "MSFT": download("MSFT")
+}
 
-df = download("AAPL")
+ds = build_dataset(
+    data=data,
+    horizon=10,
+    target=0.05
+)
 
-if df is None:
-    print("No data")
-else:
+print("Dataset shape:")
+print(ds.shape)
 
-    f = add_features(df)
-
-    print("Rows:", len(f))
-
-    print(
-        f[
-            [
-                "Close",
-                "SMA50",
-                "SMA200",
-                "RSI14"
-            ]
-        ].tail(3)
-    )
+print()
+print(ds.head())
