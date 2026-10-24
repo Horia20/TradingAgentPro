@@ -3,6 +3,7 @@ import pandas as pd
 
 
 def rsi(close, n=14):
+
     d = close.diff()
 
     up = d.clip(lower=0).ewm(
@@ -37,6 +38,8 @@ def atr(df, n=14):
         alpha=1 / n,
         adjust=False
     ).mean()
+
+
 def add_features(df):
 
     d = df.copy()
@@ -61,4 +64,72 @@ def add_features(df):
 
     d["sma50_200"] = d["SMA50"] / d["SMA200"] - 1
 
-    return d
+    d["atr_pct"] = d["ATR14"] / c
+
+    d["vol_ratio"] = (
+        d["Volume"]
+        / d["Volume"].rolling(20).mean()
+    ).fillna(1.0)
+
+    d["dist_high"] = (
+        c / c.rolling(252).max() - 1
+    )
+
+    d["volat_20"] = (
+        c.pct_change().rolling(20).std()
+    )
+
+    ema12 = c.ewm(
+        span=12,
+        adjust=False
+    ).mean()
+
+    ema26 = c.ewm(
+        span=26,
+        adjust=False
+    ).mean()
+
+    macd = ema12 - ema26
+
+    signal = macd.ewm(
+        span=9,
+        adjust=False
+    ).mean()
+
+    d["macd_hist"] = macd - signal
+
+    ll = d["Low"].rolling(14).min()
+    hh = d["High"].rolling(14).max()
+
+    k = 100 * (
+        c - ll
+    ) / (
+        hh - ll
+    ).replace(0, np.nan)
+
+    d["stoch_k"] = k.rolling(3).mean()
+
+    d["roc12"] = c.pct_change(12) * 100
+
+    tp = (
+        d["High"]
+        + d["Low"]
+        + c
+    ) / 3
+
+    d["cci20"] = (
+        tp - tp.rolling(20).mean()
+    ) / (
+        0.015 *
+        tp.rolling(20).apply(
+            lambda x: np.abs(
+                x - x.mean()
+            ).mean(),
+            raw=True
+        )
+    )
+
+    return d.replace(
+        [np.inf, -np.inf],
+        np.nan
+    )
