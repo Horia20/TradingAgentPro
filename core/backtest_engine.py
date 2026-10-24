@@ -60,30 +60,6 @@ def profit_factor(returns):
     )
 
 
-def backtest_summary(returns):
-
-    returns = pd.Series(returns).dropna()
-
-    return {
-        "trades": int(len(returns)),
-        "win_rate": win_rate(returns),
-        "average_return": average_return(returns),
-        "profit_factor": profit_factor(returns),
-        "best_trade": float(returns.max()) if len(returns) else 0.0,
-        "worst_trade": float(returns.min()) if len(returns) else 0.0,
-    }
-
-
-def buy_and_hold_backtest(close, horizon):
-
-    returns = create_returns(
-        close,
-        horizon
-    )
-
-    return backtest_summary(
-        returns
-    )
 def expectancy(returns):
 
     returns = pd.Series(returns).dropna()
@@ -110,4 +86,59 @@ def expectancy(returns):
         win_rate_value * avg_win
         -
         loss_rate_value * avg_loss
+    )
+
+
+def max_drawdown(returns):
+
+    returns = pd.Series(returns).dropna()
+
+    if len(returns) == 0:
+        return 0.0
+
+    equity = (
+        1 + returns
+    ).cumprod()
+
+    peak = equity.cummax()
+
+    drawdown = (
+        equity / peak
+        - 1
+    )
+
+    return float(
+        drawdown.min()
+    )
+
+
+def backtest_summary(returns):
+
+    returns = pd.Series(returns).dropna()
+
+    return {
+        "trades": int(len(returns)),
+        "win_rate": win_rate(returns),
+        "average_return": average_return(returns),
+        "profit_factor": profit_factor(returns),
+        "expectancy": expectancy(returns),
+        "max_drawdown": max_drawdown(returns),
+        "best_trade": float(
+            returns.max()
+        ) if len(returns) else 0.0,
+        "worst_trade": float(
+            returns.min()
+        ) if len(returns) else 0.0,
+    }
+
+
+def buy_and_hold_backtest(close, horizon):
+
+    returns = create_returns(
+        close,
+        horizon
+    )
+
+    return backtest_summary(
+        returns
     )
