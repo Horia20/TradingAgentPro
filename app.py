@@ -27,6 +27,14 @@ from core.feature_importance import (
     feature_importance_report,
 )
 
+from core.portfolio_engine import (
+    equal_weight_portfolio,
+)
+
+from core.equity_curve import (
+    equity_curve,
+)
+
 
 TICKERS = [
     "AAPL",
@@ -177,4 +185,29 @@ print(
     feature_importance_report(
         result["model"]
     )
+)
+
+print("\n=== PORTFOLIO TEST ===\n")
+
+portfolio_returns = test_set[
+    test_set["probability"] >= 0.40
+]["fwd"]
+
+portfolio = equal_weight_portfolio(
+    portfolio_returns
+)
+
+print(portfolio)
+
+curve = equity_curve(
+    portfolio_returns
+)
+
+curve.to_csv(
+    "reports/equity_curve.csv",
+    index=False
+)
+
+print(
+    "\nSaved: reports/equity_curve.csv"
 )
