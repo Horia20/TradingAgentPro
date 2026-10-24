@@ -17,6 +17,10 @@ from core.dataset_engine import (
     non_overlapping,
 )
 
+from core.calibration_engine import (
+    calibrate_model,
+)
+
 
 def make_model():
 
@@ -33,7 +37,11 @@ def make_model():
     )
 
 
-def train_model(data, horizon=10, target=0.05):
+def train_model(
+    data,
+    horizon=10,
+    target=0.05
+):
 
     ds = build_dataset(
         data=data,
@@ -44,24 +52,37 @@ def train_model(data, horizon=10, target=0.05):
     if len(ds) < 500:
         return None
 
-    dates = sorted(ds.index.unique())
+    dates = sorted(
+        ds.index.unique()
+    )
 
-    cut = dates[int(len(dates) * 0.75)]
+    cut = dates[
+        int(len(dates) * 0.75)
+    ]
 
-    train = ds[ds.index <= cut]
-    test = ds[ds.index > cut]
+    train = ds[
+        ds.index <= cut
+    ]
+
+    test = ds[
+        ds.index > cut
+    ]
 
     if len(test) < 50:
         return None
 
-    model = make_model()
+    base_model = make_model()
 
-    model.fit(
+    calibrated = calibrate_model(
+        base_model
+    )
+
+    calibrated.fit(
         train[FEATURES],
         train["label"]
     )
 
-    proba = model.predict_proba(
+    proba = calibrated.predict_proba(
         test[FEATURES]
     )[:, 1]
 
@@ -106,13 +127,16 @@ def train_model(data, horizon=10, target=0.05):
     test["probability"] = proba
 
     return {
-        "model": model,
+        "model": calibrated,
         "metrics": metrics,
         "test_set": test,
     }
 
 
-def predict_stock(model, df):
+def predict_stock(
+    model,
+    df
+):
 
     f = add_features(df)
 
