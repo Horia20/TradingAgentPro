@@ -142,3 +142,23 @@ def buy_and_hold_backtest(close, horizon):
     return backtest_summary(
         returns
     )
+
+
+def benchmark_backtest(data, horizon):
+
+    all_returns = []
+
+    for ticker, df in data.items():
+
+        returns = create_returns(
+            df["Close"],
+            horizon
+        )
+
+        all_returns.extend(
+            returns.tolist()
+        )
+
+    return backtest_summary(
+        all_returns
+    )
