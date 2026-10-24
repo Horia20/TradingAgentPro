@@ -1,3 +1,5 @@
+import pandas as pd
+
 from xgboost import XGBClassifier
 
 
@@ -14,3 +16,13 @@ def make_model():
         verbosity=0,
         n_jobs=-1,
     )
+
+
+def non_overlapping(df, horizon):
+
+    parts = [
+        g.sort_index().iloc[::max(horizon, 1)]
+        for _, g in df.groupby("ticker")
+    ]
+
+    return pd.concat(parts) if parts else df
