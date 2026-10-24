@@ -1,5 +1,4 @@
 FEATURES = [
-    "ret_60",
     "dist_sma200",
     "sma50_200",
     "RSI14",
