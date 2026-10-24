@@ -1,5 +1,6 @@
 import pandas as pd
 
+from sklearn.metrics import roc_auc_score
 from xgboost import XGBClassifier
 
 from core.indicators import add_features
@@ -65,3 +66,52 @@ def build_dataset(data, horizon, target):
     ).astype(int)
 
     return ds
+
+
+def train_model(data, horizon=10, target=0.05):
+
+    ds = build_dataset(
+        data=data,
+        horizon=horizon,
+        target=target
+    )
+
+    if len(ds) < 500:
+        return None
+
+    dates = sorted(ds.index.unique())
+
+    cut = dates[int(len(dates) * 0.75)]
+
+    train = ds[ds.index <= cut]
+    test = ds[ds.index > cut]
+
+    if len(test) < 50:
+        return None
+
+    model = make_model()
+
+    model.fit(
+        train[FEATURES],
+        train["label"]
+    )
+
+    proba = model.predict_proba(
+        test[FEATURES]
+    )[:, 1]
+
+    auc = roc_auc_score(
+        test["label"],
+        proba
+    )
+
+    metrics = {
+        "auc": float(auc),
+        "n_train": len(train),
+        "n_test": len(test),
+    }
+
+    return {
+        "model": model,
+        "metrics": metrics,
+    }
