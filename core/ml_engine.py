@@ -115,3 +115,19 @@ def train_model(data, horizon=10, target=0.05):
         "model": model,
         "metrics": metrics,
     }
+def predict_stock(model, df):
+
+    f = add_features(df)
+
+    last = (
+        f[FEATURES]
+        .dropna()
+        .tail(1)
+    )
+
+    if len(last) == 0:
+        return None
+
+    prob = model.predict_proba(last)[0][1]
+
+    return float(prob)
