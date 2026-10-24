@@ -28,6 +28,7 @@ for ticker in TICKERS:
     if df is not None:
         data[ticker] = df
 
+
 result = train_model(
     data=data,
     horizon=10,
@@ -37,6 +38,7 @@ result = train_model(
 if result is None:
     print("Model training failed.")
     raise SystemExit
+
 
 print("\n=== MODEL RESULTS ===\n")
 
@@ -119,9 +121,34 @@ print("\n=== AI STRATEGY TEST ===\n")
 
 test_set = result["test_set"]
 
+print("\nThreshold 0.30")
+print(
+    ai_strategy_summary(
+        test_set,
+        threshold=0.30
+    )
+)
+
+print("\nThreshold 0.40")
 print(
     ai_strategy_summary(
         test_set,
         threshold=0.40
+    )
+)
+
+print("\nThreshold 0.50")
+print(
+    ai_strategy_summary(
+        test_set,
+        threshold=0.50
+    )
+)
+
+print("\nThreshold 0.60")
+print(
+    ai_strategy_summary(
+        test_set,
+        threshold=0.60
     )
 )
